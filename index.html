@@ -133,9 +133,26 @@ function sendMessage(){
  if(!text)return;
  addMessage("YOU: "+text,"user");
  input.value="";
- const reply="Your command has been received. My online AI brain will be connected in the next stage.";
- addMessage("JARVIS: "+reply,"jarvis");
- speak(reply);
+ let reply = "";
+
+const command = text.toLowerCase();
+
+if (command.includes("hello")) {
+  reply = "Hello! I am JARVIS. How can I help you?";
+} else if (command.includes("your name")) {
+  reply = "My name is JARVIS, your personal assistant.";
+} else if (command.includes("time")) {
+  reply = "The time is " + new Date().toLocaleTimeString();
+} else if (command.includes("date")) {
+  reply = "Today is " + new Date().toLocaleDateString();
+} else if (command.includes("help")) {
+  reply = "You can ask me the time, date, or my name.";
+} else {
+  reply = "I don't know that command yet. Try asking for the time, date, or help.";
+}
+
+addMessage("JARVIS: " + reply, "jarvis");
+speak(reply);
 }
 
 function listen(){
