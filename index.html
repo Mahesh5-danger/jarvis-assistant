@@ -145,6 +145,11 @@ if (command.includes("hello")) {
   reply = "The time is " + new Date().toLocaleTimeString();
 } else if (command.includes("date")) {
   reply = "Today is " + new Date().toLocaleDateString();
+ } else if (command.includes("who created you") || command.includes("who made you")) {
+  reply = "I am JARVIS, a personal assistant built by my user.";
+} else if (command.includes("open youtube")) {
+  reply = "Opening YouTube.";
+  window.open("https://www.youtube.com", "_blank");
 } else if (command.includes("help")) {
   reply = "You can ask me the time, date, or my name.";
 } else {
