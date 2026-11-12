@@ -1,4 +1,4 @@
-
+h
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,6 +128,7 @@ function speak(text){
 }
 
 
+
 async function sendMessage(){
   const input = document.getElementById("command");
   const text = input.value.trim();
@@ -141,39 +142,84 @@ async function sendMessage(){
 
   if (command.includes("time")) {
     reply = "The time is " + new Date().toLocaleTimeString();
+
   } else if (command.includes("date")) {
     reply = "Today is " + new Date().toLocaleDateString();
+
   } else if (command.includes("open youtube")) {
     reply = "Opening YouTube.";
     window.open("https://www.youtube.com", "_blank");
+
   } else {
+    const match = text.match(
+      /(-?\d+(?:\.\d+)?)\s*(plus|add|minus|subtract|times|multiply|multiplied by|divide|divided by|\+|-|\*|\/)\s*(-?\d+(?:\.\d+)?)/i
+    );
+
     try {
-      const response = await fetch(
-        "https://jarvis-ai-backend-vc5c.onrender.com/chat",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message: text })
-        }
-      );
+      if (match) {
+        const operations = {
+          "plus": "add",
+          "add": "add",
+          "+": "add",
+          "minus": "subtract",
+          "subtract": "subtract",
+          "-": "subtract",
+          "times": "multiply",
+          "multiply": "multiply",
+          "*": "multiply",
+          "multiplied by": "multiply",
+          "divide": "divide",
+          "divided by": "divide",
+          "/": "divide"
+        };
 
-      const data = await response.json();
+        const response = await fetch(
+          "https://jarvis-ai-backend-vc5c.onrender.com/calculate",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              a: Number(match[1]),
+              b: Number(match[3]),
+              operation: operations[match[2].toLowerCase()]
+            })
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error("Server error");
+        const data = await response.json();
+        if (!response.ok) throw new Error("Calculator error");
+
+        reply = "The answer is " + data.result;
+
+      } else {
+        const response = await fetch(
+          "https://jarvis-ai-backend-vc5c.onrender.com/chat",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: text })
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) throw new Error("Server error");
+
+        reply = data.reply || "I received your message.";
       }
 
-      reply = data.reply || "I received your message.";
     } catch (error) {
-      reply = "I cannot connect to my online brain right now. Please try again.";
+      reply = "I cannot connect to my tools right now. Please try again.";
     }
   }
 
   addMessage("JARVIS: " + reply, "jarvis");
   speak(reply);
 }
+
 
 
 function listen(){
