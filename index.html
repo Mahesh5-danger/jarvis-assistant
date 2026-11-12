@@ -127,38 +127,54 @@ function speak(text){
  }
 }
 
-function sendMessage(){
- const input=document.getElementById("command");
- const text=input.value.trim();
- if(!text)return;
- addMessage("YOU: "+text,"user");
- input.value="";
- let reply = "";
 
-const command = text.toLowerCase();
+async function sendMessage(){
+  const input = document.getElementById("command");
+  const text = input.value.trim();
+  if (!text) return;
 
-if (command.includes("hello")) {
-  reply = "Hello! I am JARVIS. How can I help you?";
-} else if (command.includes("your name")) {
-  reply = "My name is JARVIS, your personal assistant.";
-} else if (command.includes("time")) {
-  reply = "The time is " + new Date().toLocaleTimeString();
-} else if (command.includes("date")) {
-  reply = "Today is " + new Date().toLocaleDateString();
- } else if (command.includes("who created you") || command.includes("who made you")) {
-  reply = "I am JARVIS, a personal assistant built by my user.";
-} else if (command.includes("open youtube")) {
-  reply = "Opening YouTube.";
-  window.open("https://www.youtube.com", "_blank");
-} else if (command.includes("help")) {
-  reply = "You can ask me the time, date, or my name.";
-} else {
-  reply = "I don't know that command yet. Try asking for the time, date, or help.";
+  addMessage("YOU: " + text, "user");
+  input.value = "";
+
+  const command = text.toLowerCase();
+  let reply = "";
+
+  if (command.includes("time")) {
+    reply = "The time is " + new Date().toLocaleTimeString();
+  } else if (command.includes("date")) {
+    reply = "Today is " + new Date().toLocaleDateString();
+  } else if (command.includes("open youtube")) {
+    reply = "Opening YouTube.";
+    window.open("https://www.youtube.com", "_blank");
+  } else {
+    try {
+      const response = await fetch(
+        "https://jarvis-ai-backend-vc5c.onrender.com/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: text })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Server error");
+      }
+
+      reply = data.reply || "I received your message.";
+    } catch (error) {
+      reply = "I cannot connect to my online brain right now. Please try again.";
+    }
+  }
+
+  addMessage("JARVIS: " + reply, "jarvis");
+  speak(reply);
 }
 
-addMessage("JARVIS: " + reply, "jarvis");
-speak(reply);
-}
 
 function listen(){
  const SpeechRecognition=
