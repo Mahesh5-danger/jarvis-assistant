@@ -254,6 +254,46 @@ function listen(){
  };
  recognition.start();
 }
+ let tasks = JSON.parse(localStorage.getItem("jarvisTasks") || "[]");
+
+function showTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    const item = document.createElement("p");
+    item.textContent = (task.done ? "✅ " : "📝 ") + task.text;
+
+    const button = document.createElement("button");
+    button.textContent = task.done ? "Undo" : "Done";
+
+    button.onclick = () => {
+      tasks[index].done = !tasks[index].done;
+      saveTasks();
+    };
+
+    item.appendChild(button);
+    list.appendChild(item);
+  });
+}
+
+function addTask() {
+  const input = document.getElementById("taskInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  tasks.push({ text: text, done: false });
+  input.value = "";
+  saveTasks();
+}
+
+function saveTasks() {
+  localStorage.setItem("jarvisTasks", JSON.stringify(tasks));
+  showTasks();
+}
+
+showTasks();
 </script>
 </body>
 </html>
