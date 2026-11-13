@@ -255,7 +255,6 @@ function listen(){
  recognition.start();
 }
  let tasks = JSON.parse(localStorage.getItem("jarvisTasks") || "[]");
-
 function showTasks() {
   const list = document.getElementById("taskList");
   list.innerHTML = "";
@@ -264,29 +263,26 @@ function showTasks() {
     const item = document.createElement("p");
     item.textContent = (task.done ? "✅ " : "📝 ") + task.text;
 
-    const button = document.createElement("button");
-    button.textContent = task.done ? "Undo" : "Done";
-
-    button.onclick = () => {
+    const doneButton = document.createElement("button");
+    doneButton.textContent = task.done ? "Undo" : "Done";
+    doneButton.onclick = () => {
       tasks[index].done = !tasks[index].done;
       saveTasks();
     };
 
-    item.appendChild(button);
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.onclick = () => {
+      tasks.splice(index, 1);
+      saveTasks();
+    };
+
+    item.appendChild(doneButton);
+    item.appendChild(deleteButton);
     list.appendChild(item);
   });
 }
 
-function addTask() {
-  const input = document.getElementById("taskInput");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  tasks.push({ text: text, done: false });
-  input.value = "";
-  saveTasks();
-}
 
 function saveTasks() {
   localStorage.setItem("jarvisTasks", JSON.stringify(tasks));
