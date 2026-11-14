@@ -153,8 +153,16 @@ function addMessage(text,type){
 function speak(text){
  if("speechSynthesis" in window){
   speechSynthesis.cancel();
-  const voice=new SpeechSynthesisUtterance(text);
-  voice.rate=1;
+
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.rate = 1;
+
+  voice.onend = () => {
+    if (voiceMode) {
+      listen();
+    }
+  };
+
   speechSynthesis.speak(voice);
  }
 }
