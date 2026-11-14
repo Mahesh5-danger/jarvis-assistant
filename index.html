@@ -123,6 +123,24 @@ START VOICE CONVERSATION
 
 <script>
 const chat=document.getElementById("chat");
+ let voiceMode = false;
+
+function toggleVoiceMode() {
+  const button = document.getElementById("voiceMode");
+
+  voiceMode = !voiceMode;
+
+  if (voiceMode) {
+    button.textContent = "STOP VOICE CONVERSATION";
+    document.getElementById("status").textContent = "VOICE MODE ON";
+    speak("Voice conversation mode activated. How can I help you?");
+    listen();
+  } else {
+    button.textContent = "START VOICE CONVERSATION";
+    document.getElementById("status").textContent = "SYSTEM ONLINE";
+    speechSynthesis.cancel();
+  }
+}
 
 function addMessage(text,type){
  const div=document.createElement("div");
