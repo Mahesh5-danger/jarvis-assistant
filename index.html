@@ -166,12 +166,45 @@ function speak(text){
 
   voice.onend = () => {
     if (voiceMode) {
-      listen();
+     function listen() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Voice recognition is not supported. Try Google Chrome.");
+    return;
+  }
+
+  if (activeRecognition) return;
+
+  const recognition = new SpeechRecognition();
+  activeRecognition = recognition;
+  recognition.lang = "en-IN";
+
+  recognition.onstart = () => {
+    document.getElementById("status").textContent = "LISTENING...";
+  };
+
+  recognition.onresult = (event) => {
+    document.getElementById("command").value =
+      event.results[0][0].transcript;
+    sendMessage();
+  };
+
+  recognition.onerror = () => {
+    document.getElementById("status").textContent = "VOICE INPUT ERROR";
+  };
+
+  recognition.onend = () => {
+    activeRecognition = null;
+
+    if (!voiceMode) {
+      document.getElementById("status").textContent = "SYSTEM ONLINE";
     }
   };
 
-  speechSynthesis.speak(voice);
- }
+  recognition.start();
+     } 
 }
 
 
@@ -245,19 +278,119 @@ async function sendMessage(){
           "https://jarvis-ai-backend-vc5c.onrender.com/chat",
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
+
+<script>
+const chat = document.getElementById("chat");
+let voiceMode = false;
+let activeRecognition = null;
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.rate = 1;
+
+  voice.onend = () => {
+    if (voiceMode) listen();
+  };
+
+  speechSynthesis.speak(voice);
+}
+
+function toggleVoiceMode() {
+  const button = document.getElementById("voiceMode");
+  voiceMode = !voiceMode;
+
+  if (voiceMode) {
+    button.textContent = "STOP VOICE CONVERSATION";
+    document.getElementById("status").textContent = "VOICE MODE ON";
+    speak("Voice conversation mode activated. How can I help you?");
+  } else {
+    button.textContent = "START VOICE CONVERSATION";
+    document.getElementById("status").textContent = "SYSTEM ONLINE";
+    speechSynthesis.cancel();
+
+    if (activeRecognition) {
+      activeRecognition.onend = null;
+      activeRecognition.stop();
+      activeRecognition = null;
+    }
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById("command");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage("YOU: " + text, "user");
+  input.value = "";
+
+  let reply = "";
+  const command = text.toLowerCase();
+
+  if (command.includes("time")) {
+    reply = "The time is " + new Date().toLocaleTimeString();
+  } else if (command.includes("date")) {
+    reply = "Today is " + new Date().toLocaleDateString();
+  } else if (command.includes("open youtube")) {
+    reply = "Opening YouTube.";
+    window.open("https://www.youtube.com", "_blank");
+  } else {
+    const match = text.match(
+      /(-?\d+(?:\.\d+)?)\s*(plus|add|minus|subtract|times|multiply|multiplied by|divide|divided by|\+|-|\*|\/)\s*(-?\d+(?:\.\d+)?)/i
+    );
+
+    try {
+      if (match) {
+        const operations = {
+          plus: "add", add: "add", "+": "add",
+          minus: "subtract", subtract: "subtract", "-": "subtract",
+          times: "multiply", multiply: "multiply", "*": "multiply",
+          "multiplied by": "multiply",
+          divide: "divide", "divided by": "divide", "/": "divide"
+        };
+
+        const response = await fetch(
+          "https://jarvis-ai-backend-vc5c.onrender.com/calculate",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              a: Number(match[1]),
+              b: Number(match[3]),
+              operation: operations[match[2].toLowerCase()]
+            })
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) throw new Error("Calculator error");
+        reply = "The answer is " + data.result;
+      } else {
+        const response = await fetch(
+          "https://jarvis-ai-backend-vc5c.onrender.com/chat",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: text })
           }
         );
 
         const data = await response.json();
         if (!response.ok) throw new Error("Server error");
-
         reply = data.reply || "I received your message.";
       }
-
     } catch (error) {
       reply = "I cannot connect to my tools right now. Please try again.";
     }
@@ -267,34 +400,48 @@ async function sendMessage(){
   speak(reply);
 }
 
+function listen() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  if (!SpeechRecognition) {
+    alert("Voice recognition is not supported. Try Google Chrome.");
+    voiceMode = false;
+    return;
+  }
 
-function listen(){
- const SpeechRecognition=
- window.SpeechRecognition || window.webkitSpeechRecognition;
- if(!SpeechRecognition){
-  alert("Voice recognition is not supported in this browser. Try a supported browser.");
-  return;
- }
- const recognition=new SpeechRecognition();
- recognition.lang="en-IN";
- recognition.onstart=()=>{
-  document.getElementById("status").textContent="LISTENING...";
- };
- recognition.onresult=(event)=>{
-  document.getElementById("command").value=
-  event.results[0][0].transcript;
-  sendMessage();
- };
- recognition.onerror=()=>{
-  document.getElementById("status").textContent="SYSTEM ONLINE";
- };
- recognition.onend=()=>{
-  document.getElementById("status").textContent="SYSTEM ONLINE";
- };
- recognition.start();
+  if (activeRecognition) return;
+
+  const recognition = new SpeechRecognition();
+  activeRecognition = recognition;
+  recognition.lang = "en-IN";
+
+  recognition.onstart = () => {
+    document.getElementById("status").textContent = "LISTENING...";
+  };
+
+  recognition.onresult = (event) => {
+    document.getElementById("command").value =
+      event.results[0][0].transcript;
+    sendMessage();
+  };
+
+  recognition.onerror = () => {
+    document.getElementById("status").textContent = "VOICE INPUT ERROR";
+  };
+
+  recognition.onend = () => {
+    activeRecognition = null;
+    if (!voiceMode) {
+      document.getElementById("status").textContent = "SYSTEM ONLINE";
+    }
+  };
+
+  recognition.start();
 }
- let tasks = JSON.parse(localStorage.getItem("jarvisTasks") || "[]");
+
+let tasks = JSON.parse(localStorage.getItem("jarvisTasks") || "[]");
+
 function showTasks() {
   const list = document.getElementById("taskList");
   list.innerHTML = "";
@@ -322,23 +469,25 @@ function showTasks() {
     list.appendChild(item);
   });
 }
- function addTask() {
+
+function addTask() {
   const input = document.getElementById("taskInput");
   const text = input.value.trim();
-
   if (!text) return;
 
   tasks.push({ text: text, done: false });
   input.value = "";
   saveTasks();
- }
+}
 
- function saveTasks() {
+function saveTasks() {
   localStorage.setItem("jarvisTasks", JSON.stringify(tasks));
   showTasks();
 }
 
 showTasks();
+</script>
+
 </script>
 </body>
 </html>
