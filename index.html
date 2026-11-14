@@ -124,6 +124,7 @@ START VOICE CONVERSATION
 <script>
 const chat = document.getElementById("chat");
 let voiceMode = false;
+ let conversationMemory = [];
 let activeRecognition = null;
 
 function addMessage(text, type) {
