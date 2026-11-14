@@ -176,73 +176,7 @@ function toggleVoiceMode() {
     }
   }
 }
-
-async function sendMessage() {
-  const input = document.getElementById("command");
-  const text = input.value.trim();
-  if (!text) return;
-
-  addMessage("YOU: " + text, "user");
-  input.value = "";
-
-  let reply = "";
-  const command = text.toLowerCase();
-
-  if (command.includes("time")) {
-    reply = "The time is " + new Date().toLocaleTimeString();
-  } else if (command.includes("date")) {
-  } else if (command.includes("open youtube")) {
-  reply = "Opening YouTube.";
-  window.open("https://www.youtube.com", "_blank");
-
-} else if (
-  command.startsWith("search ") ||
-  command.startsWith("look up ")
-) {
-  const query = text.replace(/^(search|look up)\s+/i, "").trim();
-
-  if (query) {
-    reply = "Opening web search results for " + query;
-    window.open(
-      "https://www.google.com/search?q=" + encodeURIComponent(query),
-      "_blank"
-    );
-  } else {
-    reply = "Please tell me what you want to search for.";
-  }
-
-} else {
-  const match = text.match(  reply = "Today is " + new Date().toLocaleDateString();
-  
-      /(-?\d+(?:\.\d+)?)\s*(plus|add|minus|subtract|times|multiply|multiplied by|divide|divided by|\+|-|\*|\/)\s*(-?\d+(?:\.\d+)?)/i
-    );
-
-    try {
-      if (match) {
-        const operations = {
-          plus: "add", add: "add", "+": "add",
-          minus: "subtract", subtract: "subtract", "-": "subtract",
-          times: "multiply", multiply: "multiply", "*": "multiply",
-          "multiplied by": "multiply",
-          divide: "divide", "divided by": "divide", "/": "divide"
-        };
-
-        const response = await fetch(
-          "https://jarvis-ai-backend-vc5c.onrender.com/calculate",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-  a: Number(match[1]),
-  b: Number(match[3]),
-  operation: operations[match[2].toLowerCase()]
-})
-          }
-        );
-
-        const data = await response.json();
-        if (!response.ok) throw new Error("Calculator error");
-
+    
 async function sendMessage() {
   const input = document.getElementById("command");
   const text = input.value.trim();
@@ -264,18 +198,12 @@ async function sendMessage() {
     reply = "Opening YouTube.";
     window.open("https://www.youtube.com", "_blank");
 
-  } else if (
-    command.startsWith("search ") ||
-    command.startsWith("look up ")
-  ) {
+  } else if (command.startsWith("search ") || command.startsWith("look up ")) {
     const query = text.replace(/^(search|look up)\s+/i, "").trim();
 
     if (query) {
       reply = "Opening web search results for " + query;
-      window.open(
-        "https://www.google.com/search?q=" + encodeURIComponent(query),
-        "_blank"
-      );
+      window.open("https://www.google.com/search?q=" + encodeURIComponent(query), "_blank");
     } else {
       reply = "Please tell me what you want to search for.";
     }
@@ -333,7 +261,6 @@ async function sendMessage() {
           { role: "user", text: text },
           { role: "model", text: reply }
         );
-
         conversationMemory = conversationMemory.slice(-12);
       }
     } catch (error) {
@@ -344,6 +271,7 @@ async function sendMessage() {
   addMessage("JARVIS: " + reply, "jarvis");
   speak(reply);
 }
+ 
 
 
 function listen() {
