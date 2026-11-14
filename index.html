@@ -235,6 +235,13 @@ async function sendMessage() {
         const data = await response.json();
         if (!response.ok) throw new Error("Server error");
         reply = data.reply || "I received your message.";
+
+conversationMemory.push(
+  { role: "user", text: text },
+  { role: "model", text: reply }
+);
+
+conversationMemory = conversationMemory.slice(-12);
       }
     } catch (error) {
       reply = "I cannot connect to my tools right now. Please try again.";
