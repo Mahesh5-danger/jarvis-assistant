@@ -87,7 +87,7 @@ footer{padding:25px;color:#55758a;font-size:12px}
  <div class="core"></div>
 </div>
 
-<h2 id="status">SYSTEM ONLINE</h2>
+<h2>SYSTEM ONLINE</h2>
 <p class="status">AWAITING YOUR COMMAND</p>
 
 <div id="chat">
@@ -139,15 +139,22 @@ function speak(text) {
   if (!("speechSynthesis" in window)) return;
 
   speechSynthesis.cancel();
+
   const voice = new SpeechSynthesisUtterance(text);
   voice.rate = 1;
 
   voice.onend = () => {
-    if (voiceMode) listen();
+    if (voiceMode && !activeRecognition) {
+      listen();
+    }
+  };
+
+  voice.onerror = () => {
+    if (!voiceMode) return;
   };
 
   speechSynthesis.speak(voice);
-}
+ }
 
 function toggleVoiceMode() {
   const button = document.getElementById("voiceMode");
